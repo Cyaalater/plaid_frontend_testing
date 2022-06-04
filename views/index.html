@@ -1,0 +1,107 @@
+<html>
+
+    <head>
+        <title>Batahat</title>
+        <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    </head>
+
+    <body>
+    <button id="linkButton">Open Link - Institution Select</button>
+
+
+    <script>
+
+        function sendDataToBackendServer(jsonObject)
+        {
+            fetch("http://localhost:3000/api/create_access_token",{
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: jsonObject
+            }).then(resp => resp.json())
+            .then(value => {console.log(value)})
+        }
+
+        var fetchResult;
+        let linkHandler;
+
+        (async function(){
+
+            await fetch("http://localhost:3000/api/create_link_token", {
+                method: 'POST'
+            }).then((response) => response.json())
+                .then((responseJson) => {
+                console.log(responseJson)
+                fetchResult = responseJson
+            })
+
+            linkHandler = Plaid.create({
+
+                // Make a request to your server to fetch a new link_token.
+                token: fetchResult.link_token,
+
+                onSuccess: function(public_token, metadata) {
+
+                    // The onSuccess function is called when the user has successfully
+
+                    // authenticated and selected an account to use.
+
+                    //
+
+                    // When called, you will send the public_token and the selected account ID,
+
+                    // metadata.accounts, to your backend app server.
+
+                    sendDataToBackendServer({
+
+                        public_token: public_token,
+
+                        accounts: metadata.accounts
+
+                    });
+
+                },
+
+                onExit: function(err, metadata) {
+
+                    // The user exited the Link flow.
+
+                    if (err != null) {
+
+                        // The user encountered a Plaid API error prior to exiting.
+
+                    }
+
+                    // metadata contains information about the institution
+
+                    // that the user selected and the most recent API request IDs.
+
+                    // Storing this information can be helpful for support.
+
+                },
+
+            });
+
+        })();
+
+        // Trigger the authentication view
+
+        document.getElementById('linkButton').onclick = function() {
+
+            // Link will automatically detect the institution ID
+
+            // associated with the public token and present the
+
+            // credential view to your user.
+
+            linkHandler.open();
+
+        };
+
+    </script>
+    </body>
+
+
+</html>
