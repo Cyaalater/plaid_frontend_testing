@@ -19,9 +19,8 @@
                 headers: {
                     'Content-Type' : 'application/json'
                 },
-                body: jsonObject
-            }).then(resp => resp.json())
-            .then(value => {console.log(value)})
+                body: JSON.stringify(jsonObject)
+            })
         }
 
         var fetchResult;
